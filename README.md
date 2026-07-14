@@ -16,6 +16,12 @@ launch into three full games together:
 | **VENICE SPEED** | Gondola regatta through dawn canals, item crates | 9102 |
 | **CYBER SPACESHIP** | Neon-canyon dogfight, 3-minute HITS deathmatch | 9103 |
 
+The three game ports are **defaults, not requirements** — but they're also
+hardcoded in the lobby's launch table (`GAME_TARGETS` in `src/main.js`), so if
+you move a game to another port, update that table too. The lobby's own port
+is fully free: `PORT=8125 node server.js` works with zero side effects,
+because games return via the `back=` URL they're handed.
+
 ## Quick start
 
 ```bash
