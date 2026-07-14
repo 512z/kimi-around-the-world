@@ -162,10 +162,24 @@ function profile() {
 // The moon is the lobby for the other games: the first player in is the HOST
 // and picks the game; everyone shares a 5 s countdown then redirects together.
 const GAME_TARGETS = {
-  race:   { port: 9101, path: '/', label: 'MOON RACE' },
-  venice: { port: 9102, path: '/', label: 'VENICE SPEED' },
-  city:   { port: 9103, path: '/arena.html', label: 'CYBER SPACESHIP' },
+  race:   { port: 9101, path: '/', staticPath: 'games/race/', label: 'MOON RACE' },
+  venice: { port: 9102, path: '/', staticPath: 'games/venice/', label: 'VENICE SPEED' },
+  city:   { port: 9103, path: '/arena.html', staticPath: 'games/city/arena.html', label: 'CYBER SPACESHIP' },
 };
+
+// On localhost / private LAN IPs the game servers live on sibling ports; on
+// any public static host (GitHub Pages, fcapp…) there are no game servers, so
+// the solo launcher links to the in-repo static copies instead.
+function isLocalHost() {
+  const h = location.hostname;
+  return h === 'localhost' || h === '127.0.0.1' || h.endsWith('.local') ||
+    /^192\.168\./.test(h) || /^10\./.test(h) || /^172\.(1[6-9]|2\d|3[01])\./.test(h);
+}
+function gameBaseUrl(target) {
+  return isLocalHost()
+    ? `http://${location.hostname}:${target.port}${target.path}`
+    : new URL(target.staticPath, location.href).href;
+}
 let isHost = false;
 let launchAt = null;                  // server clock ms
 let launchGame = 'race';
@@ -213,12 +227,13 @@ function updateLaunchCountdown() {
       el.querySelector('.lc-n').textContent = 'GO';
       const p = profile();
       const back = encodeURIComponent(`${location.origin}${location.pathname}`);
+      const base = gameBaseUrl(target);
       if (soloLaunch) {
         // contract URL: solo=1, player name/color, 3 NPC name:hex entries
         const npcParam = encodeURIComponent(
           npcs.map((n) => `${n.name}:${n.colorHex.replace('#', '')}`).join(','));
         window.location.href =
-          `http://${location.hostname}:${target.port}${target.path}?solo=1&name=${encodeURIComponent(p.name)}` +
+          `${base}?solo=1&name=${encodeURIComponent(p.name)}` +
           `&color=${p.colorHex.replace('#', '')}&npcs=${npcParam}&back=${back}`;
       } else {
         window.location.href =
