@@ -1,0 +1,28 @@
+import { chromium } from 'playwright';
+const errors = [];
+const browser = await chromium.launch();
+const page = await browser.newPage({ viewport: { width: 1280, height: 720 } });
+page.on('console', (m) => { if (m.type() === 'error') errors.push(m.text()); });
+page.on('pageerror', (e) => errors.push(String(e)));
+await page.goto('http://localhost:8125/', { waitUntil: 'networkidle' });
+await page.waitForFunction(() => window.__sceneReady, { timeout: 20000 });
+await page.waitForTimeout(8000);
+await page.screenshot({ path: 'shots/g_fix12_menu.png' });
+
+const camPos = () => page.evaluate(() => window.__camera.position.toArray().map(v => +v.toFixed(1)));
+const p0 = await camPos();
+await page.evaluate(() => window.__game.start());
+await page.waitForTimeout(300);
+const p1 = await camPos();
+await page.waitForTimeout(700);
+const p2 = await camPos();
+await page.waitForTimeout(2500);
+const p3 = await camPos();
+const d = (a, b) => Math.hypot(a[0]-b[0], a[1]-b[1], a[2]-b[2]);
+console.log('menu cam:', p0, '→ +0.3s:', p1, '→ +1s:', p2, '→ settled:', p3);
+console.log(`d(p0,p1)=${d(p0,p1).toFixed(1)} d(p0,p2)=${d(p0,p2).toFixed(1)} d(p0,p3)=${d(p0,p3).toFixed(1)}`);
+const blended = d(p0,p1) > 0.5 && d(p0,p1) < d(p0,p2) && d(p0,p2) < d(p0,p3) + 5;
+console.log(blended ? 'CAMERA BLEND OK' : 'CAMERA JUMPED');
+await page.screenshot({ path: 'shots/g_fix12_play.png' });
+console.log(errors.length ? errors.join('\n') : 'NO ERRORS');
+await browser.close();

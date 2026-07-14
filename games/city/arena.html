@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' fill='%23060b14'/%3E%3Ccircle cx='8' cy='8' r='4' fill='%2353d5fd'/%3E%3C/svg%3E"/>
+<title>CYBER SPACESHIP — Kimi Dogfight</title>
+<style>
+  @font-face { font-family: 'Geist Mono'; src: url('fonts/geist-mono-400.woff2') format('woff2'); font-weight: 400; font-display: swap; }
+  @font-face { font-family: 'Geist Mono'; src: url('fonts/geist-mono-500.woff2') format('woff2'); font-weight: 500; font-display: swap; }
+  @font-face { font-family: 'Geist Mono'; src: url('fonts/geist-mono-200.woff2') format('woff2'); font-weight: 200; font-display: swap; }
+  :root {
+    --mono: 'Geist Mono', ui-monospace, Menlo, monospace;
+    --snow: #e8f2fb;
+    --faint: rgba(232, 242, 251, 0.4);
+    --acc: #72adf7;
+  }
+  html, body { margin:0; padding:0; height:100%; background:#05070e; overflow:hidden; cursor: crosshair; }
+  #app { position:fixed; inset:0; }
+  #gl { display:block; width:100%; height:100%; }
+
+  #hud {
+    position:fixed; inset:0; z-index:10; pointer-events:none; opacity:0; transition:opacity 1.4s ease;
+    font-family:var(--mono); color:var(--snow);
+    text-shadow:0 1px 4px rgba(3,6,12,.9), 0 0 16px rgba(83,213,253,.22);
+    user-select:none;
+  }
+  #topbar {
+    position:absolute; left:28px; top:22px; display:flex; gap:22px; align-items:baseline;
+    font-size:13px; font-weight:500; letter-spacing:.26em; text-transform:uppercase;
+  }
+  #topbar b { color:var(--acc); font-weight:500; }
+  #timer {
+    position:absolute; left:50%; top:20px; transform:translateX(-50%);
+    font-size:26px; font-weight:200; letter-spacing:.14em;
+  }
+  #center-msg {
+    position:absolute; left:50%; top:26%; transform:translateX(-50%);
+    font-size:46px; font-weight:200; letter-spacing:.24em; color:#fff; opacity:0; transition:opacity .3s ease;
+    text-shadow:0 2px 12px rgba(3,6,12,.95), 0 0 34px rgba(83,213,253,.55);
+    white-space:nowrap;
+  }
+  #crosshair {
+    position:absolute; left:50%; top:50%; width:26px; height:26px; transform:translate(-50%,-50%);
+    opacity:.75;
+  }
+  #crosshair::before, #crosshair::after {
+    content:''; position:absolute; background:var(--acc);
+    box-shadow:0 0 6px rgba(83,213,253,.8);
+  }
+  #crosshair::before { left:50%; top:0; width:1.5px; height:100%; transform:translateX(-50%); }
+  #crosshair::after { top:50%; left:0; height:1.5px; width:100%; transform:translateY(-50%); }
+  #feed {
+    position:absolute; right:28px; top:22px; text-align:right;
+    font-size:11.5px; font-weight:500; letter-spacing:.18em; text-transform:uppercase; color:var(--faint);
+  }
+  #feed div { transition:opacity .6s ease; margin-bottom:5px; }
+  #bars {
+    position:absolute; left:50%; bottom:44px; transform:translateX(-50%);
+    width:280px; display:flex; flex-direction:column; gap:7px;
+  }
+  .bar { height:3px; background:rgba(232,242,251,.14); border-radius:2px; overflow:hidden; }
+  .bar i { display:block; height:100%; width:100%; border-radius:2px; transition:width .18s ease, background .3s ease; }
+  #hp-fill { background:var(--acc); }
+  #heat-fill { width:0%; background:var(--acc); }
+  #speed {
+    position:absolute; right:28px; bottom:36px;
+    font-size:22px; font-weight:200; letter-spacing:.1em;
+  }
+  #hint {
+    position:absolute; left:50%; bottom:16px; transform:translateX(-50%);
+    font-size:10px; font-weight:500; letter-spacing:.3em; opacity:.5; text-transform:uppercase;
+  }
+  #results {
+    position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
+    display:none; min-width:380px; padding:26px 36px; text-align:center;
+    background:rgba(5,9,16,.86); border:1px solid rgba(83,213,253,.35); border-radius:12px;
+    backdrop-filter:blur(10px); pointer-events:auto; font-family:var(--mono);
+  }
+  #results h2 { margin:0 0 16px; font-size:14px; font-weight:500; letter-spacing:.35em; color:var(--acc); text-transform:uppercase; }
+  #results .rrow { display:flex; gap:16px; padding:7px 2px; font-size:14px; letter-spacing:.08em;
+                   border-bottom:1px solid rgba(83,213,253,.14); align-items:baseline; }
+  #results .rrow span { width:24px; color:var(--faint); }
+  #results .rrow b { font-weight:500; }
+  #results .rrow i { margin-left:auto; font-style:normal; color:#aee4fb; }
+  #results .rrow.me b { color:#fff; }
+  #results .rback {
+    display:inline-block; margin-top:18px; padding:9px 22px; border-radius:4px;
+    border:1px solid rgba(83,213,253,.45); color:var(--snow); text-decoration:none;
+    font-size:11px; letter-spacing:.24em; text-transform:uppercase;
+  }
+  #back-to-moon {
+    position:fixed; left:18px; bottom:18px; z-index:60;
+    padding:8px 16px; border-radius:4px; text-decoration:none;
+    font-size:10.5px; letter-spacing:.2em; color:var(--snow); text-transform:uppercase;
+    background:rgba(5,9,16,.65); border:1px solid rgba(83,213,253,.35);
+    font-family:var(--mono);
+  }
+  #fade {
+    position:fixed; inset:0; background:#05070e; z-index:20; pointer-events:none;
+    transition:opacity 2.6s ease; display:flex; align-items:center; justify-content:center;
+    font-family:var(--mono); color:var(--acc); font-size:13px; letter-spacing:.55em; text-transform:uppercase;
+  }
+  #err {
+    position:fixed; inset:0; z-index:30; display:none; align-items:center; justify-content:center;
+    color:#ffb0a0; background:#100d0d; font-family:monospace; padding:2em; text-align:center;
+  }
+</style>
+<script type="importmap">
+{
+  "imports": {
+    "three": "./vendor/three/three.module.js",
+    "three/addons/": "./vendor/three/addons/"
+  }
+}
+</script>
+</head>
+<body>
+<div id="app"></div>
+<div id="hud">
+  <div id="topbar"><b id="who">—</b><span id="kills">HITS 0</span></div>
+  <div id="timer">3:00</div>
+  <div id="center-msg"></div>
+  <div id="crosshair"></div>
+  <div id="feed"></div>
+  <div id="bars">
+    <div class="bar"><i id="hp-fill"></i></div>
+    <div class="bar"><i id="heat-fill"></i></div>
+  </div>
+  <div id="speed">0 KM/H</div>
+  <div id="hint">MOUSE STEER · CLICK FIRE · E ITEM · HIT = 2S OFFLINE · W S THROTTLE · SHIFT BOOST</div>
+  <div id="results"></div>
+</div>
+<div id="fade">C&nbsp;Y&nbsp;B&nbsp;E&nbsp;R&nbsp;&nbsp;S&nbsp;P&nbsp;A&nbsp;C&nbsp;E&nbsp;S&nbsp;H&nbsp;I&nbsp;P</div>
+<div id="err"></div>
+<script type="module">
+  import { boot } from './js/arena/main.js';
+  boot(document.getElementById('app')).catch((e) => {
+    console.error(e);
+    const el = document.getElementById('err');
+    el.style.display = 'flex';
+    el.textContent = 'Failed to start renderer: ' + (e && e.message ? e.message : e);
+  });
+</script>
+</body>
+</html>

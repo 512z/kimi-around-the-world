@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>html,body{margin:0;background:#02030a;overflow:hidden}#c{display:block}</style>
+<script type="importmap">{ "imports": { "three": "../vendor/three.module.js" } }</script>
+</head>
+<body>
+<canvas id="c"></canvas>
+<script type="module">
+import * as THREE from 'three';
+import { Terrain } from '../src/terrain.js';
+import { Track } from '../src/track.js';
+import { makeCarMesh, CarSim, LIVERIES } from '../src/car.js';
+
+const v = new URLSearchParams(location.search).get('v') || '1';
+const renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('c'), antialias: true });
+renderer.setPixelRatio(1.5);
+renderer.setSize(innerWidth, innerHeight);
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x05070f);
+const camera = new THREE.PerspectiveCamera(55, innerWidth / innerHeight, 0.5, 60000);
+
+const sunDir = new THREE.Vector3(0.86, 0.14, -0.49).normalize();
+const sun = new THREE.DirectionalLight(0xfff0d8, 3.3);
+sun.position.copy(sunDir).multiplyScalar(1500);
+sun.castShadow = true;
+sun.shadow.mapSize.set(2048, 2048);
+sun.shadow.camera.near = 100; sun.shadow.camera.far = 4000;
+const S = 1400;
+sun.shadow.camera.left = -S; sun.shadow.camera.right = S; sun.shadow.camera.top = S; sun.shadow.camera.bottom = -S;
+sun.shadow.bias = -0.0006; sun.shadow.normalBias = 1.5;
+scene.add(sun, sun.target);
+scene.add(new THREE.HemisphereLight(0x2a3f5e, 0x0a0b10, 0.85));
+
+const terrain = new Terrain();
+terrain.buildNatural();
+const track = new Track();
+track.build(2).buildHash();
+track.setHeightsFromTerrain(terrain);
+terrain.carve(track);
+scene.add(terrain.buildMesh());
+scene.add(track.buildMeshes(terrain));
+terrain.buildBoulders(scene, track);
+
+// a few cars on the track
+const cars = [];
+for (let i = 0; i < 3; i++) {
+  const mesh = makeCarMesh(LIVERIES[i], i === 0);
+  scene.add(mesh);
+  const sim = new CarSim(mesh, { name: LIVERIES[i].name });
+  const f = track.frameAt(track.length * (0.62 + i * 0.02));
+  sim.placeAt(f, track.length * (0.62 + i * 0.02));
+  sim.syncMesh(0.016, 0);
+  cars.push(sim);
+}
+
+const views = {
+  '1': { p: [-1720, 90, 380], t: [-1250, -40, 150] },      // bowl crater
+  '2': { p: [900, 220, 1500], t: [900, 0, 850] },          // hairpin crater B
+  '3': { p: [-380, 45, -950], t: [100, 0, -1230] },        // finish straight + ridge
+  '4': { p: [0, 4200, 1], t: [0, 0, 0] },                  // overview
+  '5': { p: [-427, 6, -1130], t: [-427, 12, -1500] },      // gantry low
+};
+const vv = views[v] || views['1'];
+camera.position.set(...vv.p);
+camera.lookAt(...vv.t);
+sun.target.position.set(vv.t[0], 0, vv.t[2]);
+sun.target.updateMatrixWorld();
+
+renderer.render(scene, camera);
+window.__fps = 60;
+window.SELENE = { state: 'test', game: null };
+window.__trackLength = track.length;
+console.log('track length', track.length.toFixed(0), 'samples', track.count);
+</script>
+</body>
+</html>

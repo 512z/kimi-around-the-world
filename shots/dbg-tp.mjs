@@ -1,0 +1,12 @@
+import { chromium } from 'playwright';
+const browser = await chromium.launch();
+const page = await browser.newPage({ viewport: { width: 1280, height: 720 } });
+await page.goto('http://localhost:8125', { waitUntil: 'networkidle' });
+await page.waitForFunction(() => window.__game && window.__game.state() === 'ATTRACT', { timeout: 20000 });
+await page.evaluate(() => window.__game.start());
+await page.waitForFunction(() => window.__game.local(), { timeout: 10000 });
+await page.evaluate(() => { window.__game.tp(-44, -13); window.__game.setAzimuth(0.9); });
+await page.waitForTimeout(2500);
+console.log('local:', JSON.stringify(await page.evaluate(() => window.__game.local())));
+console.log('dbg:', JSON.stringify(await page.evaluate(() => window.__game.dbg())));
+await browser.close();

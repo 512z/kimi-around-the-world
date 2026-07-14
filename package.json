@@ -1,0 +1,19 @@
+{
+  "name": "kimi-around-the-world",
+  "version": "1.0.0",
+  "description": "A LAN-multiplayer game fleet made by Kimi AI: a lunar-base lobby plus three browser 3D games.",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js",
+    "fleet": "node fleet.mjs"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "playwright": "^1.61.1"
+  },
+  "dependencies": {
+    "ws": "^8.21.0"
+  }
+}

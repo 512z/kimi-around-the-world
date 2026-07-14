@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>VENICE SPEED — Venice at Dawn</title>
+<style>
+  @font-face { font-family: "Geist Mono"; font-weight: 200; src: url("assets/fonts/geist-mono-200.woff2") format("woff2"); font-display: swap; }
+  @font-face { font-family: "Geist Mono"; font-weight: 300; src: url("assets/fonts/geist-mono-300.woff2") format("woff2"); font-display: swap; }
+  @font-face { font-family: "Geist Mono"; font-weight: 400; src: url("assets/fonts/geist-mono-400.woff2") format("woff2"); font-display: swap; }
+  @font-face { font-family: "Geist Mono"; font-weight: 500; src: url("assets/fonts/geist-mono-500.woff2") format("woff2"); font-display: swap; }
+  html, body { margin: 0; height: 100%; background: #060b14; overflow: hidden; }
+  #view { position: fixed; inset: 0; width: 100%; height: 100%; display: block; }
+  #loading {
+    position: fixed; inset: 0; z-index: 50;
+    background: #060b14;
+    display: flex; flex-direction: column; align-items: flex-start; justify-content: center;
+    padding-left: 7vw;
+    font-family: "Geist Mono", ui-monospace, "SF Mono", Menlo, monospace;
+    transition: opacity .6s ease;
+  }
+  #loading.done { opacity: 0; pointer-events: none; }
+  #loading .over { color: #72adf7; font-size: 11px; letter-spacing: .55em; font-weight: 500; }
+  #loading .ttl { color: #eef5fc; font-size: clamp(40px, 6vw, 84px); font-weight: 200; letter-spacing: .04em; margin-top: 18px; }
+  #loading .barwrap { margin-top: 34px; width: 220px; height: 1px; background: rgba(226,238,250,.18); }
+  #loadbar { height: 1px; width: 0%; background: #72adf7; transition: width .2s linear; }
+  #loadtext { margin-top: 14px; color: rgba(226,238,250,.34); font-size: 10px; letter-spacing: .3em; }
+</style>
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"
+}}
+</script>
+<link rel="stylesheet" href="src/ui/styles.css">
+</head>
+<body>
+<canvas id="view"></canvas>
+<div id="ui">
+  <div id="scrim"></div>
+  <div class="bar top"></div>
+  <div class="bar bot"></div>
+  <div id="hud"></div>
+  <div id="notice"></div>
+</div>
+<div id="loading">
+  <div class="over">CANALE DI VENEZIA — 05:40</div>
+  <div class="ttl">VENICE SPEED</div>
+  <div class="barwrap"><div id="loadbar"></div></div>
+  <div id="loadtext">LOADING</div>
+</div>
+<script>
+  window.__errors = [];
+  addEventListener('error', e => window.__errors.push(String(e.message)));
+  addEventListener('unhandledrejection', e => window.__errors.push(String(e.reason)));
+</script>
+<script type="module">
+  import { boot } from './src/main.js';
+  boot().catch(e => { window.__errors.push('boot: ' + e.message); console.error(e); });
+</script>
+</body>
+</html>

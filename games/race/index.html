@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#060b14" />
+  <title>MOON RACE — Lunar Night Grand Prix</title>
+  <link rel="stylesheet" href="./style.css" />
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "./vendor/three.module.js",
+        "three/addons/": "./vendor/addons/"
+      }
+    }
+  </script>
+</head>
+<body>
+  <!-- Live Three.js game background: the attract loop renders here at all times. -->
+  <canvas id="scene"></canvas>
+
+  <!-- All menu / HUD DOM is injected into #ui by src/menu.js (createMenu). -->
+  <div id="ui"></div>
+
+  <!-- Boot. main.js imports ./menu.js and drives the game; menu.js owns the UI. -->
+  <script type="module" src="./src/main.js"></script>
+</body>
+</html>

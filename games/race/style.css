@@ -1,0 +1,813 @@
+/* ============================================================
+   SELENE GP — Menu + HUD design system
+   Voice: lunar-night minimalism. One accent, white opacity steps,
+   a single left rail, letterbox framing, scrim over live canvas.
+   ============================================================ */
+
+/* ---- Fonts: Geist Mono via jsDelivr (@fontsource) ---- */
+@font-face {
+  font-family: "Geist Mono";
+  font-style: normal;
+  font-weight: 200;
+  font-display: swap;
+  src: url("https://cdn.jsdelivr.net/fontsource/fonts/geist-mono@latest/latin-200-normal.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Geist Mono";
+  font-style: normal;
+  font-weight: 300;
+  font-display: swap;
+  src: url("https://cdn.jsdelivr.net/fontsource/fonts/geist-mono@latest/latin-300-normal.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Geist Mono";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("https://cdn.jsdelivr.net/fontsource/fonts/geist-mono@latest/latin-400-normal.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Geist Mono";
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("https://cdn.jsdelivr.net/fontsource/fonts/geist-mono@latest/latin-500-normal.woff2") format("woff2");
+}
+
+/* ---- Tokens ---- */
+:root {
+  --snow: #eef5fc;
+  --dim: rgba(226, 238, 250, 0.62);
+  --faint: rgba(226, 238, 250, 0.34);
+  --acc: #72adf7;
+  --ink: #060b14;
+  --font: "Geist Mono", ui-monospace, "SF Mono", Menlo, monospace;
+
+  --rail-left: 7vw;
+  --ease-out: cubic-bezier(0.22, 0.9, 0.3, 1);
+  --ease-frame: cubic-bezier(0.6, 0.05, 0.25, 1);
+}
+
+/* ---- Reset ---- */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: var(--ink);
+  color: var(--snow);
+  font-family: var(--font);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  user-select: none;
+  -webkit-user-select: none;
+  cursor: default;
+}
+
+/* ---- Live game canvas ---- */
+#scene {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  z-index: 0;
+}
+
+/* ---- UI root ---- */
+#ui {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none; /* children opt back in */
+}
+
+/* ============================================================
+   Letterbox bars
+   ============================================================ */
+.letterbox {
+  position: fixed;
+  left: 0;
+  right: 0;
+  height: 5.5vh;
+  background: rgba(6, 11, 20, 0.96);
+  z-index: 40;
+  pointer-events: none;
+  transition: height 0.8s var(--ease-frame);
+}
+.letterbox-top {
+  top: 0;
+}
+.letterbox-bottom {
+  bottom: 0;
+}
+#ui.playing .letterbox {
+  height: 0;
+}
+
+/* ============================================================
+   Menu layer: scrim + single left rail + footer
+   ============================================================ */
+.menu-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  /* Scrim: diagonal ink wash off the left edge + soft bottom falloff.
+     No panels, no blur — legibility comes from these gradients only. */
+  background:
+    linear-gradient(
+      to top,
+      rgba(6, 11, 20, 0.85) 0%,
+      rgba(6, 11, 20, 0.45) 22%,
+      rgba(6, 11, 20, 0) 40%
+    ),
+    linear-gradient(
+      102deg,
+      rgba(6, 11, 20, 0.92) 0%,
+      rgba(6, 11, 20, 0.8) 26%,
+      rgba(6, 11, 20, 0.42) 46%,
+      rgba(6, 11, 20, 0) 65%
+    );
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 0.5s ease, visibility 0s linear 0s;
+}
+#ui.playing .menu-layer {
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.5s ease, visibility 0s linear 0.5s;
+}
+
+.rail {
+  position: absolute;
+  left: var(--rail-left);
+  top: 0;
+  bottom: 0;
+  width: min(58vw, 880px);
+}
+
+/* Shared footer hint on the rail axis */
+.footer {
+  position: absolute;
+  left: var(--rail-left);
+  top: 91vh;
+  font-size: 10px;
+  font-weight: 400;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--faint);
+  white-space: nowrap;
+}
+
+/* ============================================================
+   Screens (sections swapped on the rail)
+   ============================================================ */
+.screen {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.5s ease, visibility 0s linear 0.5s;
+}
+.screen.active {
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 0.5s ease, visibility 0s linear 0s;
+}
+
+/* Layout grammar ------------------------------------------------ */
+.overline {
+  position: absolute;
+  top: 16vh;
+  left: 0;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.55em;
+  text-transform: uppercase;
+  color: var(--acc);
+  white-space: nowrap;
+}
+
+.title {
+  position: absolute;
+  top: 20vh;
+  left: -0.04em; /* optical nudge for the wide-tracked mono caps */
+  font-size: clamp(40px, 6vw, 84px);
+  font-weight: 200;
+  line-height: 0.98;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--snow);
+  white-space: nowrap;
+}
+.title .acc {
+  color: var(--acc);
+  font-weight: 400;
+}
+
+/* Menu item list */
+.items {
+  position: absolute;
+  top: 50vh;
+  left: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1.9vh;
+}
+
+/* ============================================================
+   Menu items: 1px accent tick + sliding label
+   ============================================================ */
+.item {
+  position: relative;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 3vw;
+  background: none;
+  border: none;
+  padding: 0;
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+  pointer-events: auto;
+  color: var(--dim);
+  opacity: 0; /* entrance animation reveals */
+  transform: translateX(-16px);
+}
+.item:focus {
+  outline: none;
+}
+
+/* the accent tick, revealed in the gap when the label slides right */
+.item::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: 0;
+  height: 1px;
+  background: var(--acc);
+  transform: translateY(-50%);
+  transition: width 0.3s var(--ease-out);
+}
+
+.item-label {
+  display: inline-block;
+  font-size: 13.5px;
+  font-weight: 500;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: var(--dim);
+  transform: translateX(0);
+  transition: transform 0.3s var(--ease-out), color 0.3s ease;
+  white-space: nowrap;
+}
+
+/* value items (QUALITY / SOUND) */
+.item-value {
+  min-width: min(34vw, 340px);
+}
+.item-val {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.5em;
+  font-size: 13.5px;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--acc);
+  white-space: nowrap;
+}
+.item-val .chev {
+  opacity: 0;
+  color: var(--acc);
+  transition: opacity 0.3s ease;
+}
+
+/* selected state (shared by keyboard + hover) */
+.item.selected {
+  color: var(--snow);
+}
+.item.selected::before {
+  width: 30px;
+}
+.item.selected .item-label {
+  color: var(--snow);
+  transform: translateX(46px);
+}
+.item.selected .item-val .chev {
+  opacity: 1;
+}
+
+/* entrance stagger — re-applied each time a screen opens */
+.items.stagger .item {
+  animation: itemIn 0.55s var(--ease-out) both;
+}
+@keyframes itemIn {
+  from {
+    opacity: 0;
+    transform: translateX(-16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* ============================================================
+   Static content rows (controls list, stat rows, standings)
+   ============================================================ */
+.rows {
+  position: absolute;
+  top: 50vh;
+  left: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1.55vh;
+  min-width: min(40vw, 420px);
+}
+.row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 3vw;
+}
+.row .k {
+  font-size: 12px;
+  font-weight: 400;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  color: var(--dim);
+  white-space: nowrap;
+}
+.row .v {
+  font-size: 12.5px;
+  font-weight: 400;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--snow);
+  white-space: nowrap;
+}
+.row .v .u {
+  color: var(--faint);
+}
+.note {
+  margin-top: 1vh;
+  font-size: 10.5px;
+  font-weight: 400;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--faint);
+  white-space: nowrap;
+}
+
+/* Controls screen: the static rows are the mid-rail content, so lift them
+   above the midpoint and drop BACK to sit as the last item below the list. */
+.screen-controls .rows {
+  top: 41vh;
+}
+.screen-controls .items {
+  top: 72vh;
+}
+
+/* ============================================================
+   Results screen (denser grammar)
+   ============================================================ */
+.screen-results .overline {
+  top: 11.5vh;
+}
+.screen-results .title {
+  top: 15vh;
+}
+.results-body {
+  position: absolute;
+  top: 34vh;
+  left: 0;
+  width: min(52vw, 560px);
+}
+.stat-grid {
+  display: flex;
+  gap: 4vw;
+  margin-bottom: 2.4vh;
+}
+.stat {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5vh;
+}
+.stat .k {
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.34em;
+  text-transform: uppercase;
+  color: var(--faint);
+}
+.stat .v {
+  font-size: 17px;
+  font-weight: 300;
+  letter-spacing: 0.06em;
+  color: var(--snow);
+  font-variant-numeric: tabular-nums;
+}
+.lap-times {
+  display: flex;
+  gap: 1.4vw;
+  margin-bottom: 2.6vh;
+  font-size: 11.5px;
+  letter-spacing: 0.08em;
+  color: var(--dim);
+  font-variant-numeric: tabular-nums;
+}
+.lap-times .lt {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4vh;
+}
+.lap-times .lt .k {
+  font-size: 9px;
+  letter-spacing: 0.24em;
+  color: var(--faint);
+  text-transform: uppercase;
+}
+.lap-times .lt .v {
+  color: var(--snow);
+}
+
+.standings {
+  display: flex;
+  flex-direction: column;
+  gap: 0.7vh;
+}
+.standings .srow {
+  display: grid;
+  grid-template-columns: 2.4em 1fr auto;
+  align-items: baseline;
+  gap: 1.2em;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+}
+.standings .srow .pos {
+  color: var(--faint);
+  font-variant-numeric: tabular-nums;
+}
+.standings .srow .name {
+  color: var(--dim);
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.standings .srow .time {
+  color: var(--dim);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+.standings .srow.player .pos,
+.standings .srow.player .name,
+.standings .srow.player .time {
+  color: var(--acc);
+}
+
+/* results menu items sit at the bottom of the rail */
+.screen-results .items {
+  top: auto;
+  bottom: 12vh;
+}
+
+/* ============================================================
+   Center notices (countdown + transient alerts)
+   ============================================================ */
+.notice-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+.center-notice {
+  position: absolute;
+  left: 50%;
+  top: 46%;
+  transform: translate(-50%, -50%) scale(1.35);
+  opacity: 0;
+  filter: blur(6px);
+  font-weight: 200;
+  text-transform: uppercase;
+  color: var(--snow);
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+  text-align: center;
+  transition: opacity 0.32s ease, transform 0.4s var(--ease-out), filter 0.32s ease;
+}
+.center-notice.show {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1);
+  filter: blur(0);
+}
+.center-notice.countdown {
+  font-size: clamp(90px, 17vh, 220px);
+  letter-spacing: 0.02em;
+  color: var(--snow);
+}
+.center-notice.countdown.go {
+  color: var(--acc);
+  font-weight: 300;
+}
+.center-notice.alert {
+  font-size: clamp(30px, 5vw, 64px);
+  font-weight: 300;
+  letter-spacing: 0.18em;
+  color: var(--acc);
+}
+
+/* ============================================================
+   HUD (gameplay only)
+   ============================================================ */
+.hud-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.6s ease, visibility 0s linear 0.6s;
+}
+#ui.playing .hud-layer {
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 0.6s ease, visibility 0s linear 0s;
+}
+
+/* top-center cluster: position / clock / lap */
+.hud-top {
+  position: absolute;
+  top: 4.5vh;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: baseline;
+  gap: 3.2vw;
+}
+.hud-top .pos,
+.hud-top .lap {
+  font-size: 12px;
+  font-weight: 400;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  color: var(--dim);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.hud-top .pos b,
+.hud-top .lap b {
+  color: var(--snow);
+  font-weight: 400;
+}
+.hud-clock {
+  font-size: clamp(28px, 3vw, 40px);
+  font-weight: 200;
+  letter-spacing: 0.02em;
+  color: var(--snow);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* right-edge vertical progress rail */
+.hud-progress {
+  position: absolute;
+  right: 26px;
+  top: 26vh;
+  height: 48vh;
+  width: 2px;
+  background: var(--faint);
+  overflow: hidden;
+}
+.hud-progress-fill {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 0%;
+  background: var(--acc);
+  transition: height 0.25s linear;
+}
+
+/* live standings panel (top-left) */
+.hud-standings {
+  position: absolute;
+  left: 4vw;
+  top: 12vh;
+  min-width: 190px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: rgba(6, 11, 20, 0.55);
+  border: 1px solid rgba(226, 238, 250, 0.12);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+.hud-standings .stand-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 2.5px 0;
+  color: var(--dim);
+}
+.hud-standings .stand-row .pos {
+  width: 14px;
+  color: var(--faint);
+  font-weight: 500;
+}
+.hud-standings .stand-row i {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  display: inline-block;
+}
+.hud-standings .stand-row.me {
+  color: var(--snow);
+}
+.hud-standings .stand-row .lapinfo {
+  margin-left: auto;
+  color: var(--faint);
+  font-size: 9.5px;
+}
+
+/* power-up slot, top-center */
+.hud-item {
+  position: absolute;
+  left: 50%;
+  top: 9vh;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  transition: opacity 0.3s ease;
+}
+.hud-item.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+.hud-item-glyph {
+  width: 78px;
+  height: 78px;
+  padding: 12px;
+  border-radius: 16px;
+  background: rgba(6, 11, 20, 0.6);
+  border: 1px solid rgba(114, 173, 247, 0.55);
+  box-shadow: 0 0 22px rgba(114, 173, 247, 0.18), inset 0 0 16px rgba(114, 173, 247, 0.08);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+.hud-item-key {
+  position: absolute;
+  right: -7px;
+  bottom: 20px;
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 500;
+  color: #060b14;
+  background: var(--snow);
+}
+.hud-item-name {
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.4em;
+  color: var(--snow);
+  text-transform: uppercase;
+}
+.hud-item.pop {
+  animation: itemPop 0.45s cubic-bezier(0.22, 0.9, 0.3, 1);
+}
+@keyframes itemPop {
+  0% {
+    transform: translateX(-50%) scale(1.35);
+    filter: blur(6px);
+    opacity: 0;
+  }
+  100% {
+    transform: translateX(-50%) scale(1);
+    filter: blur(0);
+    opacity: 1;
+  }
+}
+
+/* bottom-right speed block */
+.hud-speed {
+  position: absolute;
+  right: 4vw;
+  bottom: 6vh;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+.hud-speed-row {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5em;
+}
+.hud-speed-val {
+  font-size: clamp(48px, 6vw, 64px);
+  font-weight: 200;
+  line-height: 0.9;
+  letter-spacing: 0.01em;
+  color: var(--snow);
+  font-variant-numeric: tabular-nums;
+}
+.hud-speed-unit {
+  font-size: 12px;
+  font-weight: 400;
+  letter-spacing: 0.22em;
+  color: var(--faint);
+}
+.hud-boost {
+  margin-top: 1.4vh;
+  width: min(20vw, 220px);
+  height: 3px;
+  background: var(--faint);
+  overflow: hidden;
+  align-self: stretch;
+}
+.hud-boost-fill {
+  height: 100%;
+  width: 100%;
+  background: var(--acc);
+  transform-origin: right center;
+  transform: scaleX(1);
+  transition: transform 0.12s linear, background 0.2s ease;
+}
+.hud-boost.empty .hud-boost-fill {
+  animation: boostFlash 0.7s ease-in-out infinite;
+}
+@keyframes boostFlash {
+  0%,
+  100% {
+    background: var(--acc);
+    opacity: 1;
+  }
+  50% {
+    background: var(--snow);
+    opacity: 0.35;
+  }
+}
+
+/* bottom-left minimap + hints */
+.hud-bottomleft {
+  position: absolute;
+  left: 4vw;
+  bottom: 6vh;
+  display: flex;
+  flex-direction: column;
+  gap: 1.6vh;
+  align-items: flex-start;
+}
+.minimap {
+  width: 150px;
+  height: 150px;
+  display: block;
+  opacity: 0.92;
+}
+.hud-hints {
+  display: flex;
+  gap: 1.6em;
+  font-size: 10px;
+  font-weight: 400;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--faint);
+  white-space: nowrap;
+  transition: opacity 1s ease;
+}
+.hud-hints.faded {
+  opacity: 0;
+}
+.hud-hints b {
+  color: var(--dim);
+  font-weight: 400;
+}
+
+/* When HUD is explicitly told to hide (visible:false) */
+.hud-layer.hidden {
+  opacity: 0 !important;
+  visibility: hidden !important;
+}

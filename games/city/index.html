@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>CYBER SPACESHIP — rain over the neon canyon</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' fill='%23060b14'/%3E%3Crect x='3' y='7' width='10' height='2' fill='%2353d5fd'/%3E%3C/svg%3E" />
+<link rel="stylesheet" href="css/ui.css" />
+<script type="importmap">
+{
+  "imports": {
+    "three": "./vendor/three/three.module.js",
+    "three/addons/": "./vendor/three/addons/"
+  }
+}
+</script>
+</head>
+<body>
+<canvas id="gl"></canvas>
+
+<div id="danger"></div>
+<div id="scrim"></div>
+<div id="bar-top" class="bar"></div>
+<div id="bar-bot" class="bar"></div>
+
+<!-- ======================= left rail: every screen lives here ============ -->
+<div id="rail">
+
+  <section class="screen" data-screen="main">
+    <div class="ov">TRANSIT GRID // CLEARANCE REVOKED</div>
+    <h1 class="ttl">CYBER <span class="acc">SPACESHIP</span></h1>
+    <div class="sub">A rogue cab. One fare. The whole grid awake.</div>
+    <div class="items">
+      <div class="item" data-act="start"><span class="lab">Start Run</span></div>
+      <div class="item" data-act="controls"><span class="lab">Controls</span></div>
+      <div class="item" data-act="settings"><span class="lab">Settings</span></div>
+    </div>
+  </section>
+
+  <section class="screen" data-screen="controls">
+    <div class="ov">MANUAL OVERRIDE</div>
+    <h1 class="ttl small">CON<span class="acc">TROLS</span></h1>
+    <div class="rows">
+      <div class="row"><span class="k">Mouse</span><span class="v">Steer — offset from center banks the cab</span></div>
+      <div class="row"><span class="k">W / S</span><span class="v">Throttle up / down</span></div>
+      <div class="row"><span class="k">Space</span><span class="v">Vertical burn — instant climb impulse</span></div>
+      <div class="row"><span class="k">Shift</span><span class="v">Boost — overheats, let it cool</span></div>
+      <div class="row"><span class="k">R</span><span class="v">Restart run</span></div>
+      <div class="row"><span class="k">Esc</span><span class="v">Pause / back</span></div>
+      <div class="row"><span class="k">Goal</span><span class="v acc">Break every cordon through its breach ring</span></div>
+      <div class="row"><span class="k">Fatal</span><span class="v">Towers, pylons, decks, billboards, pursuers</span></div>
+    </div>
+    <div class="items">
+      <div class="item" data-act="back"><span class="lab">Back</span></div>
+    </div>
+  </section>
+
+  <section class="screen" data-screen="settings">
+    <div class="ov">SYSTEMS</div>
+    <h1 class="ttl small">SET<span class="acc">TINGS</span></h1>
+    <div class="items">
+      <div class="item" data-act="quality" data-val="quality">
+        <span class="lab">Quality</span>
+        <span class="val"><span class="chev">‹ </span><span class="vtext">HIGH</span><span class="chev"> ›</span></span>
+      </div>
+      <div class="item" data-act="sound" data-val="sound">
+        <span class="lab">Sound</span>
+        <span class="val"><span class="chev">‹ </span><span class="vtext">ON</span><span class="chev"> ›</span></span>
+      </div>
+      <div class="item" data-act="resetbest"><span class="lab">Reset Best</span></div>
+      <div class="item" data-act="back"><span class="lab">Back</span></div>
+    </div>
+  </section>
+
+  <section class="screen" data-screen="pause">
+    <div class="ov">SIGNAL HELD</div>
+    <h1 class="ttl small">PAU<span class="acc">SED</span></h1>
+    <div class="items">
+      <div class="item" data-act="resume"><span class="lab">Resume</span></div>
+      <div class="item" data-act="restart"><span class="lab">Restart</span></div>
+      <div class="item" data-act="settings"><span class="lab">Settings</span></div>
+      <div class="item" data-act="quit"><span class="lab">Quit to Menu</span></div>
+    </div>
+  </section>
+
+  <section class="screen" data-screen="results">
+    <div class="ov">RUN COMPLETE</div>
+    <h1 class="ttl" id="r-score">0</h1>
+    <div class="rows" id="r-rows">
+      <div class="row"><span class="k">Distance</span><span class="v" id="r-dist">0 m</span></div>
+      <div class="row"><span class="k">Near Misses</span><span class="v" id="r-near">0</span></div>
+      <div class="row"><span class="k">Cordons Broken</span><span class="v" id="r-cord">0</span></div>
+      <div class="row"><span class="k">Top Speed</span><span class="v" id="r-top">0 km/h</span></div>
+      <div class="row"><span class="k">Best</span><span class="v acc" id="r-best">0</span></div>
+    </div>
+    <div class="items">
+      <div class="item" data-act="retry"><span class="lab">Retry</span></div>
+      <div class="item" data-act="quit"><span class="lab">Menu</span></div>
+    </div>
+  </section>
+
+</div>
+
+<div id="foot">↑↓ SELECT&nbsp;&nbsp;&nbsp;ENTER CONFIRM</div>
+
+<!-- ================================= HUD ================================= -->
+<div id="hud">
+  <div id="clock">00:00<span class="ms">.0</span></div>
+  <div id="alert">CORDON CLOSING</div>
+  <div id="bigstat">
+    <div id="score">0</div>
+    <div id="speed">0<span class="unit"> KM/H</span></div>
+    <div id="heat"><div class="fill"></div></div>
+    <div id="heatlab">Boost Heat</div>
+  </div>
+  <div id="prail"><div class="fill"></div><div class="lab">CORDON 01 — 000M</div></div>
+  <div id="hints">
+    <b>MOUSE</b> STEER&nbsp;&nbsp;<b>W/S</b> THROTTLE<br>
+    <b>SPACE</b> BURN&nbsp;&nbsp;<b>SHIFT</b> BOOST&nbsp;&nbsp;<b>R</b> RESTART
+  </div>
+  <div id="toasts"></div>
+</div>
+
+<div id="notice"></div>
+<div id="reticle"><div class="ring"></div></div>
+<div id="anchor"></div>
+
+<div id="loading">
+  <div class="ov">NEO-KOWLOON TRANSIT AUTHORITY</div>
+  <div class="big">CYBER <span class="acc">SPACESHIP</span></div>
+  <div id="lbar"><div class="fill"></div></div>
+  <div id="lpct">CONNECTING 0%</div>
+</div>
+
+<div id="fps">60</div>
+
+<script type="module" src="js/main.js"></script>
+</body>
+</html>

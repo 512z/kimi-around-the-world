@@ -1,0 +1,16 @@
+import { chromium } from 'playwright';
+const errors = [];
+const browser = await chromium.launch();
+const page = await browser.newPage({ viewport: { width: 1280, height: 720 } });
+page.on('console', (m) => { if (m.type() === 'error') errors.push(m.text()); });
+page.on('pageerror', (e) => errors.push(String(e)));
+await page.goto('http://localhost:8125/?t=0', { waitUntil: 'networkidle' });
+await page.waitForFunction(() => window.__sceneReady, { timeout: 20000 });
+await page.waitForTimeout(1500);
+await page.screenshot({ path: 'shots/g_fix6b_open.png' });
+await page.goto('http://localhost:8125/?t=104', { waitUntil: 'networkidle' });
+await page.waitForFunction(() => window.__sceneReady, { timeout: 20000 });
+await page.waitForTimeout(1500);
+await page.screenshot({ path: 'shots/g_fix6b_vista.png' });
+console.log(errors.length ? errors.join('\n') : 'NO ERRORS');
+await browser.close();

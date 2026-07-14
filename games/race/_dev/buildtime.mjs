@@ -1,0 +1,15 @@
+import { Terrain } from '../src/terrain.js';
+import { Track } from '../src/track.js';
+let t0 = Date.now();
+const terrain = new Terrain();
+terrain.buildNatural();
+console.log('buildNatural', Date.now() - t0, 'ms'); t0 = Date.now();
+const track = new Track();
+track.build(2).buildHash();
+console.log('track build+hash', Date.now() - t0, 'ms'); t0 = Date.now();
+track.setHeightsFromTerrain(terrain);
+console.log('setHeights (incl erosion)', Date.now() - t0, 'ms'); t0 = Date.now();
+terrain.carve(track);
+console.log('carve', Date.now() - t0, 'ms'); t0 = Date.now();
+terrain.buildMesh();
+console.log('buildMesh', Date.now() - t0, 'ms');

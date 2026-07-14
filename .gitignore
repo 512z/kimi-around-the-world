@@ -1,0 +1,12 @@
+node_modules/
+**/node_modules/
+.DS_Store
+server.log
+server-game.log
+fleet.log
+
+# test artifacts (regenerable); harness scripts stay
+shots/errors.txt
+shots/errors-fallback.txt
+shots/*.png
+games/race/_dev/shots/
