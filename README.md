@@ -1,5 +1,7 @@
 # KIMI AROUND THE WORLD
 
+**▶ Play now: <https://512z.github.io/kimi-around-the-world/>**
+
 A browser game made by **Kimi AI** — a real-time 3D lunar base that acts as a
 multiplayer lobby, connected to three more Kimi-made 3D games. Everything is
 plain web tech (Three.js + WebSocket); no engine, no build step.
@@ -8,12 +10,9 @@ plain web tech (Three.js + WebSocket); no engine, no build step.
 
 You are a Kimi ball on the Moon. From the lobby you can wander the base with
 your friends over LAN — or play solo with three NPC Kimi companions — and
-launch into three full games together:
-
-**▶ Play it now: <https://512z.github.io/kimi-around-the-world/>** — the
-single-player experience (lobby + 3 NPC companions + all three games) is
-deployed to GitHub Pages from this repo; LAN multiplayer needs the node
-fleet below.
+launch into three full games together. The link above is the single-player
+experience (lobby + 3 NPCs + all three games) deployed to GitHub Pages from
+this repo; LAN multiplayer needs the node fleet below.
 
 | Game | What it is | Port |
 |------|------------|------|
