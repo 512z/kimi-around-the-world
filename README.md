@@ -10,6 +10,11 @@ You are a Kimi ball on the Moon. From the lobby you can wander the base with
 your friends over LAN — or play solo with three NPC Kimi companions — and
 launch into three full games together:
 
+**▶ Play it now: <https://512z.github.io/kimi-around-the-world/>** — the
+single-player experience (lobby + 3 NPC companions + all three games) is
+deployed to GitHub Pages from this repo; LAN multiplayer needs the node
+fleet below.
+
 | Game | What it is | Port |
 |------|------------|------|
 | **MOON RACE** | Lunar grand prix — 3 laps, KartRider-style power-ups | 9101 |
@@ -32,6 +37,11 @@ npm run fleet          # lobby :9100 + race :9101 + venice :9102 + city :9103
 Open `http://localhost:9100` — or share `http://<your-LAN-ip>:9100` and anyone
 on the network joins the same moon. Each server can also run alone
 (`node server.js`, or `node games/<game>/server.js` with `PORT`).
+
+The same repo deploys to GitHub Pages on every push (Actions workflow in
+`.github/workflows/pages.yml`). On any public static host the lobby
+automatically links the single-player launcher to the in-repo static copies
+of the games (`games/…`) instead of the LAN ports — no config needed.
 
 ## Multiplayer
 
