@@ -120,7 +120,6 @@ launches (no `solo`/`npcs`) are completely unchanged.
 - `index.html` — entry point: canvas, `#ui` mount, import map, boots `src/main.js`
 - `style.css` — menu + HUD design system (Geist Mono, one accent, letterbox)
 - `server.js` — static file server + WebSocket race relay on one port (no-store)
-- `play` — self-symlink so `/play/...` URLs resolve to the game root
 - `src/main.js` — bootstrap: renderer, lighting, selective-bloom pipeline, input, main loop, lobby handoff
 - `src/menu.js` — entire front-end: menu screens, HUD, minimap, countdown, results
 - `src/game.js` — race state machine: attract → grid/countdown → race → results; solo + MP logic
